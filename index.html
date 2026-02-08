@@ -13,7 +13,8 @@
 
         body {
             height: 100vh;
-            display: flex;
+            display: flex; /* Use flexbox for layout */
+            flex-direction: column; /* Stack children vertically */
             justify-content: center;
             align-items: center;
             background: linear-gradient(135deg, #232526 0%, #000000 100%);
@@ -36,7 +37,7 @@
 
         .clock-line {
             height: 4px;
-            background: white;
+            background: rgb(45, 45, 45);
             position: relative;
             border-radius: 2px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
@@ -48,7 +49,7 @@
             transform: translateY(-50%);
             width: 2px;
             height: 14px;
-            background: white;
+            background: rgb(135, 135, 135);
         }
 
         .hour-label {
@@ -57,7 +58,7 @@
             transform: translateX(-50%);
             font-size: 16px;
             font-weight: bold;
-            color: white;
+            color: rgb(180, 180, 180);
             text-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
         }
 
@@ -68,7 +69,7 @@
             /* Add padding to create a large, invisible hover area */
             padding: 30px 10px;
         }
-
+        
         .timezone-indicator {
             position: absolute;
             top: 50%;
@@ -77,17 +78,6 @@
             height: 20px;
             transform: translate(-50%, -50%);
             border-radius: 2px; /* Keep this for rounded corners */
-        }
-
-        .timezone-name {
-            position: absolute;
-            top: 75%; /* Position from the top of the container */
-            left: 50%; /* Ensure horizontal centering */
-            transform: translateX(-50%);
-            font-size: 14px;
-            color: white;
-            text-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
-            white-space: nowrap;
         }
 
         .tooltip {
@@ -118,6 +108,32 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
         }
+
+        .legend-container {
+            width: 90%;
+            max-width: 1000px;
+            margin-top: 40px;
+            display: flex;
+            flex-direction: column; /* Arrange items in a vertical list */
+            gap: 10px; /* Space between list items */
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            color: #e0e0e0;
+        }
+
+        .legend-color-swatch {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+            margin-right: 8px;
+        }
+
+        .legend-names {
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -125,6 +141,7 @@
         <h1 class="clock-title">🕰️ World Clock</h1>
         <div class="clock-line" id="clockLine"></div>
     </div>
+    <div class="legend-container" id="legendContainer"></div>
 
     <script src="times/timezones.js"></script>
     <script>
@@ -150,62 +167,93 @@
             clockLine.appendChild(label);
         }
 
-        // Create indicators for each friend
-        friendsTimezones.forEach(friend => {
-            // Create the main container for this friend
+        // Group friends by timezone to combine indicators
+        const timezonesToFriends = friendsTimezones.reduce((acc, friend) => {
+            const { timezone } = friend;
+            if (!acc[timezone]) {
+                acc[timezone] = [];
+            }
+            acc[timezone].push(friend);
+            return acc;
+        }, {});
+
+        // Create indicators for each timezone group
+        const legendContainer = document.getElementById('legendContainer');
+        Object.values(timezonesToFriends).forEach(friendsInGroup => {
+            const firstFriend = friendsInGroup[0];
+            const names = friendsInGroup.map(f => f.name).join(', ');
+
+            // Create the main container for this timezone group
             const friendContainer = document.createElement('div');
             friendContainer.className = 'friend-container';
-            friendContainer.id = `container-${friend.name}`; // Unique ID for updating
+            // Use a sanitized timezone string for the ID
+            friendContainer.id = `container-${firstFriend.timezone.replace(/[:+]/g, '')}`;
 
             // Create the indicator line
             const indicator = document.createElement('div');
             indicator.className = 'timezone-indicator';
-            indicator.style.background = friend.color;
-            indicator.style.boxShadow = `0 0 10px ${friend.color}`;
-            
-            // Create the name label
-            const nameLabel = document.createElement('div');
-            nameLabel.className = 'timezone-name';
-            nameLabel.textContent = friend.name;
+            indicator.style.background = firstFriend.color;
+            indicator.style.boxShadow = `0 0 10px ${firstFriend.color}`;
             
             // Create the tooltip
             const tooltip = document.createElement('span');
             tooltip.className = 'tooltip';
-            indicator.appendChild(tooltip);
 
             // Append elements to their containers
+            friendContainer.appendChild(tooltip); // Tooltip is now a direct child for easier access
             friendContainer.appendChild(indicator);
-            friendContainer.appendChild(nameLabel);
             clockLine.appendChild(friendContainer);
+
+            // Create legend item
+            const legendItem = document.createElement('div');
+            legendItem.className = 'legend-item';
+
+            const colorSwatch = document.createElement('div');
+            colorSwatch.className = 'legend-color-swatch';
+            colorSwatch.style.backgroundColor = firstFriend.color;
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'legend-names';
+            nameSpan.textContent = names;
+
+            legendItem.append(colorSwatch, nameSpan);
+            legendContainer.appendChild(legendItem);
         });
 
         function updateClocks() {
-            friendsTimezones.forEach(friend => {
-                const container = document.getElementById(`container-${friend.name}`);
+            const indicatorPositions = [];
+
+            Object.values(timezonesToFriends).forEach(friendsInGroup => {
+                const firstFriend = friendsInGroup[0];
+                const containerId = `container-${firstFriend.timezone.replace(/[:+]/g, '')}`;
+                const container = document.getElementById(containerId);
                 const tooltip = container.querySelector('.tooltip');
                 if (!container) return;
 
                 // Get current time in the specified timezone
-                const gmtString = friend.timezone;
+                const gmtString = firstFriend.timezone;
                 const offsetString = gmtString.replace(/GMT/i, '').trim();
 
                 // Parse hours and minutes from formats like "+5:30" or "-8"
                 const parts = offsetString.split(':');
                 const offsetHours = parseInt(parts[0], 10);
-                const offsetMinutes = parts.length > 1 ? parseInt(parts[1], 10) : 0;
+                let offsetMinutes = parts.length > 1 ? parseInt(parts[1], 10) : 0;
 
                 if (isNaN(offsetHours) || isNaN(offsetMinutes)) {
-                    console.error(`Invalid timezone format for ${friend.name}: ${gmtString}`);
+                    console.error(`Invalid timezone format for ${firstFriend.name}: ${gmtString}`);
                     tooltip.textContent = 'Error';
-                    return; // Skip to the next friend
+                    return; // Skip to the next group
                 }
 
                 // Get the sign of the offset to apply it correctly to the minutes
-                const sign = Math.sign(offsetHours) || 1;
+                // If offsetHours is 0 or -0, sign is 0. Default to 1.
+                // Also handle negative offsets like GMT-3:30 where the sign is on the hour.
+                const sign = offsetHours < 0 ? -1 : 1;
+                offsetMinutes = offsetMinutes * sign;
 
                 // Calculate the time based on UTC and the offset
                 const now = new Date();
-                const totalOffsetInMinutes = (offsetHours * 60) + (offsetMinutes * sign);
+                const totalOffsetInMinutes = (offsetHours * 60) + offsetMinutes;
                 now.setUTCMinutes(now.getUTCMinutes() + totalOffsetInMinutes);
 
                 // Extract the new local time components
@@ -227,7 +275,26 @@
 
                 // Update indicator position
                 container.style.left = positionPercentage + '%';
+
+                // Store position for staggering logic
+                indicatorPositions.push({ id: containerId, pos: positionPercentage });
             });
+
+            // Staggering logic
+            indicatorPositions.sort((a, b) => a.pos - b.pos);
+            for (let i = 0; i < indicatorPositions.length - 1; i++) {
+                const current = indicatorPositions[i];
+                const next = indicatorPositions[i + 1];
+                const currentEl = document.getElementById(current.id);
+                const nextEl = document.getElementById(next.id);
+
+                // If indicators are too close (e.g., less than 3% apart), stagger the next one
+                const isClose = (next.pos - current.pos) < 3;
+                // This logic is no longer needed as names are removed
+                // If you want to bring back staggering, you'd need a new visual approach
+                // For now, we'll leave it out for a cleaner timeline.
+                // nextEl.classList.toggle('staggered', isClose);
+            }
         }
 
         // Initial update

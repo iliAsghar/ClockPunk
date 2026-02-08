@@ -17,6 +17,11 @@ const friendsTimezones = [
     {
         name: 'ili',
         timezone: 'GMT+3:30',
-        color: '#a3a3a3'
+        color: '#ff6f00'
+    },
+    {
+        name: 'Sith',
+        timezone: 'GMT-7',
+        color: '#ff0606'
     }
 ];
