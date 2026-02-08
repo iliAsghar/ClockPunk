@@ -12,7 +12,7 @@ const friendsTimezones = [
     {
         name: 'Para',
         timezone: 'GMT-8',
-        color: '#1eb4ff'
+        color: '#1effff'
     },
     {
         name: 'ili',
@@ -33,5 +33,10 @@ const friendsTimezones = [
         name: 'JamJam',
         timezone: 'GMT-8',
         color: '#00ff00'
+    },
+    {
+        name: 'RivalTiger',
+        timezone: 'GMT+0',
+        color: '#ffea00'
     }
 ];
