@@ -177,40 +177,17 @@
                 if (!container) return;
 
                 // Get current time in the specified timezone
-                const gmtString = friend.timezone;
-                const offsetString = gmtString.replace(/GMT/i, '').trim();
-
-                // Parse hours and minutes from formats like "+5:30" or "-8"
-                const parts = offsetString.split(':');
-                const offsetHours = parseInt(parts[0], 10);
-                const offsetMinutes = parts.length > 1 ? parseInt(parts[1], 10) : 0;
-
-                if (isNaN(offsetHours) || isNaN(offsetMinutes)) {
-                    console.error(`Invalid timezone format for ${friend.name}: ${gmtString}`);
-                    tooltip.textContent = 'Error';
-                    return; // Skip to the next friend
-                }
-
-                // Get the sign of the offset to apply it correctly to the minutes
-                const sign = Math.sign(offsetHours) || 1;
-
-                // Calculate the time based on UTC and the offset
                 const now = new Date();
-                
-                // Apply the full offset in minutes to the UTC time
-                const totalOffsetInMinutes = (offsetHours * 60) + (offsetMinutes * sign);
-                now.setUTCMinutes(now.getUTCMinutes() + totalOffsetInMinutes);
-
-                // Extract the new local time components
-                const hours = now.getUTCHours();
-                const minutes = now.getUTCMinutes();
-                const seconds = now.getUTCSeconds();
+                const timeString = now.toLocaleTimeString('en-US', {
+                    timeZone: friend.timezone,
+                    hour12: false,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                const [hours, minutes, seconds] = timeString.split(':').map(Number);
 
                 // Update tooltip text
-                const timeString = 
-                    String(hours).padStart(2, '0') + ':' + 
-                    String(minutes).padStart(2, '0') + ':' +
-                    String(seconds).padStart(2, '0');
                 tooltip.textContent = timeString;
 
                 // Convert current time to a percentage of the day
