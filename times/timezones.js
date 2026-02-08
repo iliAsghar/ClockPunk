@@ -1,7 +1,7 @@
 const friendsTimezones = [
     {
         name: 'Cash',
-        timezone: 'GMT-7',
+        timezone: 'GMT+1',
         color: '#0edf61'
     },
     {
