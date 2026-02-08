@@ -16,7 +16,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(135deg, #232526 0%, #414345 100%);
+            background: linear-gradient(135deg, #232526 0%, #000000 100%);
             font-family: Arial, sans-serif;
         }
 
@@ -178,24 +178,33 @@
 
                 // Get current time in the specified timezone
                 const gmtString = friend.timezone;
-                const offset = parseInt(gmtString.replace(/GMT/i, '').trim(), 10);
+                const offsetString = gmtString.replace(/GMT/i, '').trim();
 
-                if (isNaN(offset)) {
+                // Parse hours and minutes from formats like "+5:30" or "-8"
+                const parts = offsetString.split(':');
+                const offsetHours = parseInt(parts[0], 10);
+                const offsetMinutes = parts.length > 1 ? parseInt(parts[1], 10) : 0;
+
+                if (isNaN(offsetHours) || isNaN(offsetMinutes)) {
                     console.error(`Invalid timezone format for ${friend.name}: ${gmtString}`);
                     tooltip.textContent = 'Error';
                     return; // Skip to the next friend
                 }
 
+                // Get the sign of the offset to apply it correctly to the minutes
+                const sign = Math.sign(offsetHours) || 1;
+
                 // Calculate the time based on UTC and the offset
                 const now = new Date();
-                const utcHours = now.getUTCHours();
-                const utcMinutes = now.getUTCMinutes();
-                const utcSeconds = now.getUTCSeconds();
+                
+                // Apply the full offset in minutes to the UTC time
+                const totalOffsetInMinutes = (offsetHours * 60) + (offsetMinutes * sign);
+                now.setUTCMinutes(now.getUTCMinutes() + totalOffsetInMinutes);
 
-                // Apply the offset
-                let hours = (utcHours + offset + 24) % 24; // +24 to handle negative offsets
-                let minutes = utcMinutes;
-                let seconds = utcSeconds;
+                // Extract the new local time components
+                const hours = now.getUTCHours();
+                const minutes = now.getUTCMinutes();
+                const seconds = now.getUTCSeconds();
 
                 // Update tooltip text
                 const timeString = 

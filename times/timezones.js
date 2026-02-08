@@ -1,17 +1,22 @@
 const friendsTimezones = [
     {
-        name: 'Sarah',
-        timezone: 'GMT-4', // New York (EDT)
-        color: '#ff6b6b'
+        name: 'Cash',
+        timezone: 'GMT-7',
+        color: '#30a15d'
     },
     {
-        name: 'Kenji',
-        timezone: 'GMT+9', // Tokyo
-        color: '#48dbfb'
+        name: 'Aera',
+        timezone: 'GMT+8',
+        color: '#ee93f1'
     },
     {
-        name: 'Maria',
-        timezone: 'GMT+2', // Madrid (CEST)
-        color: '#1dd1a1'
+        name: 'Para',
+        timezone: 'GMT-8',
+        color: '#2885b4'
+    },
+    {
+        name: 'ili',
+        timezone: 'GMT+3:30',
+        color: '#a3a3a3'
     }
 ];
