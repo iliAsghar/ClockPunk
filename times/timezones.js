@@ -2,17 +2,17 @@ const friendsTimezones = [
     {
         name: 'Cash',
         timezone: 'GMT-7',
-        color: '#30a15d'
+        color: '#0edf61'
     },
     {
         name: 'Aera',
         timezone: 'GMT+8',
-        color: '#ee93f1'
+        color: '#f25eff'
     },
     {
         name: 'Para',
         timezone: 'GMT-8',
-        color: '#2885b4'
+        color: '#1eb4ff'
     },
     {
         name: 'ili',
